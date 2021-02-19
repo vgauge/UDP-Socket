@@ -4,6 +4,9 @@
 #include <winsock2.h> // 윈속 헤더 포함 
 #include <windows.h> 
 #include <fstream>
+#include <ctime>
+#include <chrono>
+
 #pragma comment (lib,"ws2_32.lib") // 윈속 라이브러리 링크
 #define BUFFER_SIZE 1024 // 버퍼 사이즈
 
@@ -11,7 +14,7 @@ using namespace std;
 
 void writeFile(char* buffer);
 
-void main(void)
+int main(void)
 {
     WSADATA wsaData; // 윈속 데이터 구조체.(WSAStartup() 사용할꺼!)
     SOCKET ServerSocket; // 소켓 선언
@@ -21,7 +24,6 @@ void main(void)
     int FromClient_Size; // 클라이언트로부터 받는 메시지 크기
     int Recv_Size; // 받는 사이즈
     int Send_Size; // 보내는 사이즈
-    int Count;
     int retval;
 
     char Buffer[BUFFER_SIZE];
@@ -93,11 +95,27 @@ void main(void)
     }
     closesocket(ServerSocket); // 소켓을 닫습니다.
     WSACleanup();
+
+    return 0;
+}
+
+string getCurDateTime()
+{
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::time_t start_time = std::chrono::system_clock::to_time_t(now);
+    char fileName[100];
+    struct tm buf;
+    errno_t err = localtime_s(&buf, &start_time);
+    if (std::strftime(fileName, sizeof(fileName), "%Y%m%d.txt", &buf)) {
+        //std::cout << fileName << '\n';
+    }
+    return fileName;
 }
 
 void writeFile(char* buffer)
 {
-    ofstream file("test.txt", ios::app);
+    string fileName = getCurDateTime();
+    ofstream file(fileName, ios::app);
     file << buffer << endl;
     file.close();
 }
